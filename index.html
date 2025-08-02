@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subnetting Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .network-range {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .copy-btn {
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+
+        .result-card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <header class="text-center mb-10">
+                <h1 class="text-4xl font-bold text-gray-200 mb-2">Subnetting Calculator</h1>
+                <p class="text-gray-400">Calculate subnet masks, network ranges, and more for any IP address</p>
+            </header>
+
+            <!-- Input Form -->
+            <div class="bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-xl font-semibold text-gray-200 mb-4">Enter Network Details</h2>
+                <form id="subnetForm" class="space-y-4">
+                    <div>
+                        <label for="ipAddress" class="block text-sm font-medium text-gray-700 mb-1">IP Address</label>
+                        <div class="relative">
+                            <input type="text" id="ipAddress" placeholder="e.g. 192.168.1.0"
+                                class="w-full px-4 py-2 bg-gray-700 text-gray-200 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required
+                                pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-network-wired text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="hosts" class="block text-sm font-medium text-gray-700 mb-1">Hosts per Subnet</label>
+                        <div class="relative">
+                            <input type="number" id="hosts" placeholder="e.g. 30" min="2"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                required>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-users text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center">
+                        <i class="fas fa-calculator mr-2"></i> Calculate Subnet
+                    </button>
+                </form>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-200">Subnetting Results</h2>
+                    <button id="copyAll"
+                        class="bg-gray-700 hover:bg-gray-600 text-gray-200 py-1 px-3 rounded-md text-sm flex items-center copy-btn">
+                        <i class="fas fa-copy mr-1"></i> Copy All
+                    </button>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-800 rounded-lg p-4 result-card">
+                        <h3 class="font-semibold text-gray-300 mb-2 flex items-center">
+                            <i class="fas fa-network-wired text-blue-400 mr-2"></i> Network Class
+                        </h3>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Class</span>
+                            <span id="networkClass" class="font-bold text-indigo-600"></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Default Mask</span>
+                            <span id="defaultMask" class="font-bold text-indigo-600"></span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-4 result-card">
+                        <h3 class="font-semibold text-gray-700 mb-2 flex items-center">
+                            <i class="fas fa-shield-alt text-indigo-500 mr-2"></i> Subnet Mask
+                        </h3>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">New Mask</span>
+                            <span id="newMask" class="font-bold text-indigo-600"></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">CIDR Notation</span>
+                            <span id="cidrNotation" class="font-bold text-indigo-600"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Results -->
+                <div class="bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+                    <h3 class="font-semibold text-gray-300 mb-4 flex items-center">
+                        <i class="fas fa-info-circle text-blue-400 mr-2"></i> Detailed Information
+                    </h3>
+
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Default Binary Mask:</span>
+                            <div class="flex items-center">
+                                <span id="defaultBinary" class="font-mono text-sm bg-gray-100 px-2 py-1 rounded"></span>
+                                <button class="copy-btn ml-2 text-gray-400 hover:text-blue-400"
+                                    data-target="defaultBinary">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Required Hosts:</span>
+                            <div class="flex items-center">
+                                <span id="requiredHosts" class="font-mono text-sm bg-gray-100 px-2 py-1 rounded"></span>
+                                <button class="copy-btn ml-2 text-gray-500 hover:text-indigo-600"
+                                    data-target="requiredHosts">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Host Bits Needed:</span>
+                            <div class="flex items-center">
+                                <span id="hostBits" class="font-mono text-sm bg-gray-100 px-2 py-1 rounded"></span>
+                                <button class="copy-btn ml-2 text-gray-500 hover:text-indigo-600"
+                                    data-target="hostBits">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">New Binary Mask:</span>
+                            <div class="flex items-center">
+                                <span id="newBinary" class="font-mono text-sm bg-gray-100 px-2 py-1 rounded"></span>
+                                <button class="copy-btn ml-2 text-gray-500 hover:text-indigo-600"
+                                    data-target="newBinary">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Hosts per Network:</span>
+                            <div class="flex items-center">
+                                <span id="hostsPerNetwork"
+                                    class="font-mono text-sm bg-gray-100 px-2 py-1 rounded"></span>
+                                <button class="copy-btn ml-2 text-gray-500 hover:text-indigo-600"
+                                    data-target="hostsPerNetwork">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Hosts per Subnet:</span>
+                            <div class="flex items-center">
+                                <span id="hostsPerSubnet"
+                                    class="font-mono text-sm bg-gray-100 px-2 py-1 rounded"></span>
+                                <button class="copy-btn ml-2 text-gray-500 hover:text-indigo-600"
+                                    data-target="hostsPerSubnet">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Ranges -->
+                <div class="bg-gray-800 rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-semibold text-gray-300 flex items-center">
+                            <i class="fas fa-sitemap text-blue-400 mr-2"></i> Network Ranges
+                        </h3>
+                        <button id="copyRanges"
+                            class="bg-gray-700 hover:bg-gray-600 text-gray-200 py-1 px-3 rounded-md text-sm flex items-center copy-btn">
+                            <i class="fas fa-copy mr-1"></i> Copy Ranges
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-700">
+                                <tr>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        Subnet</th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        Network Address</th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        Broadcast Address</th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                        Usable Range</th>
+                                </tr>
+                            </thead>
+                            <tbody id="networkRanges" class="bg-gray-800 divide-y divide-gray-700">
+                                <!-- Network ranges will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('subnetForm');
+            const resultsSection = document.getElementById('results');
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const ipAddress = document.getElementById('ipAddress').value;
+                const hosts = parseInt(document.getElementById('hosts').value);
+
+                if (!validateIP(ipAddress)) {
+                    alert('Please enter a valid IP address');
+                    return;
+                }
+
+                if (hosts < 2) {
+                    alert('Hosts per subnet must be at least 2');
+                    return;
+                }
+
+                const subnetInfo = calculateSubnet(ipAddress, hosts);
+                displayResults(subnetInfo);
+                resultsSection.classList.remove('hidden');
+
+                // Scroll to results
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            // Copy buttons functionality
+            document.querySelectorAll('.copy-btn[data-target]').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const targetId = this.getAttribute('data-target');
+                    const textToCopy = document.getElementById(targetId).textContent;
+                    copyToClipboard(textToCopy);
+
+                    // Show feedback
+                    const icon = this.querySelector('i');
+                    icon.classList.remove('fa-copy');
+                    icon.classList.add('fa-check', 'text-green-500');
+
+                    setTimeout(() => {
+                        icon.classList.remove('fa-check', 'text-green-500');
+                        icon.classList.add('fa-copy');
+                    }, 2000);
+                });
+            });
+
+            // Copy all button
+            document.getElementById('copyAll').addEventListener('click', function () {
+                let allText = "Subnetting Calculator Results\n\n";
+
+                // Summary
+                allText += `Network Class: ${document.getElementById('networkClass').textContent}\n`;
+                allText += `Default Mask: ${document.getElementById('defaultMask').textContent}\n`;
+                allText += `New Subnet Mask: ${document.getElementById('newMask').textContent}\n`;
+                allText += `CIDR Notation: ${document.getElementById('cidrNotation').textContent}\n\n`;
+
+                // Detailed info
+                allText += `Default Binary Mask: ${document.getElementById('defaultBinary').textContent}\n`;
+                allText += `Required Hosts: ${document.getElementById('requiredHosts').textContent}\n`;
+                allText += `Host Bits Needed: ${document.getElementById('hostBits').textContent}\n`;
+                allText += `New Binary Mask: ${document.getElementById('newBinary').textContent}\n`;
+                allText += `Hosts per Network: ${document.getElementById('hostsPerNetwork').textContent}\n`;
+                allText += `Hosts per Subnet: ${document.getElementById('hostsPerSubnet').textContent}\n\n`;
+
+                // Network ranges
+                allText += "Network Ranges:\n";
+                const rows = document.querySelectorAll('#networkRanges tr');
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    allText += `${cells[0].textContent}: ${cells[1].textContent} - ${cells[2].textContent} (Usable: ${cells[3].textContent})\n`;
+                });
+
+                copyToClipboard(allText);
+
+                // Show feedback
+                const icon = this.querySelector('i');
+                icon.classList.remove('fa-copy');
+                icon.classList.add('fa-check', 'text-green-500');
+                this.textContent = ' Copied!';
+
+                setTimeout(() => {
+                    icon.classList.remove('fa-check', 'text-green-500');
+                    icon.classList.add('fa-copy');
+                    this.innerHTML = '<i class="fas fa-copy mr-1"></i> Copy All';
+                }, 2000);
+            });
+
+            // Copy ranges button
+            document.getElementById('copyRanges').addEventListener('click', function () {
+                let rangesText = "Network Ranges:\n";
+                const rows = document.querySelectorAll('#networkRanges tr');
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    rangesText += `${cells[0].textContent}: ${cells[1].textContent} - ${cells[2].textContent} (Usable: ${cells[3].textContent})\n`;
+                });
+
+                copyToClipboard(rangesText);
+
+                // Show feedback
+                const icon = this.querySelector('i');
+                icon.classList.remove('fa-copy');
+                icon.classList.add('fa-check', 'text-green-500');
+                this.textContent = ' Copied!';
+
+                setTimeout(() => {
+                    icon.classList.remove('fa-check', 'text-green-500');
+                    icon.classList.add('fa-copy');
+                    this.innerHTML = '<i class="fas fa-copy mr-1"></i> Copy Ranges';
+                }, 2000);
+            });
+        });
+
+        function validateIP(ip) {
+            const ipPattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            return ipPattern.test(ip);
+        }
+
+        function getClass(ip) {
+            const firstOctet = parseInt(ip.split('.')[0]);
+            if (1 <= firstOctet && firstOctet <= 126) {
+                return { class: "A", mask: "255.0.0.0" };
+            } else if (128 <= firstOctet && firstOctet <= 191) {
+                return { class: "B", mask: "255.255.0.0" };
+            } else if (192 <= firstOctet && firstOctet <= 223) {
+                return { class: "C", mask: "255.255.255.0" };
+            } else {
+                return { class: "Unknown", mask: "N/A" };
+            }
+        }
+
+        function binaryMask(mask) {
+            return mask.split('.').map(octet => {
+                return parseInt(octet).toString(2).padStart(8, '0');
+            }).join('.');
+        }
+
+        function calculateSubnet(ipStr, requiredHosts) {
+            const ipClassInfo = getClass(ipStr);
+            const ipClass = ipClassInfo.class;
+            const defaultMask = ipClassInfo.mask;
+            const defaultBinary = binaryMask(defaultMask);
+
+            // Calculate how many bits are needed for host part
+            const hostBits = Math.ceil(Math.log2(requiredHosts + 2)); // +2 for network and broadcast
+            const subnetBits = 32 - hostBits;
+
+            // Calculate new subnet mask
+            let newMask = '';
+            let newMaskBinary = '';
+
+            if (subnetBits >= 0 && subnetBits <= 32) {
+                const octets = [];
+                let remainingBits = subnetBits;
+
+                for (let i = 0; i < 4; i++) {
+                    if (remainingBits >= 8) {
+                        octets.push(255);
+                        remainingBits -= 8;
+                    } else if (remainingBits > 0) {
+                        const octet = 256 - Math.pow(2, 8 - remainingBits);
+                        octets.push(octet);
+                        remainingBits = 0;
+                    } else {
+                        octets.push(0);
+                    }
+                }
+
+                newMask = octets.join('.');
+                newMaskBinary = binaryMask(newMask);
+            } else {
+                newMask = "Invalid";
+                newMaskBinary = "Invalid";
+            }
+
+            // Determine subnet group size
+            const SG = Math.pow(2, hostBits);
+
+            // Total 1s and 0s in new subnet mask
+            const totalOnes = subnetBits;
+            const totalZeros = 32 - subnetBits;
+
+            // Extended part from default to new mask
+            const defaultMaskBin = defaultMask.split('.').map(x => {
+                return parseInt(x).toString(2).padStart(8, '0');
+            }).join('');
+
+            const newMaskBin = newMask.split('.').map(x => {
+                return parseInt(x).toString(2).padStart(8, '0');
+            }).join('');
+
+            // Subtract default 1s from new 1s to get extended subnet area
+            const extendedSubnetOnes = (newMaskBin.match(/1/g) || []).length - (defaultMaskBin.match(/1/g) || []).length;
+
+            // Host counts
+            const hostPerNetwork = Math.pow(2, totalZeros);
+            const hostPerSubnet = Math.pow(2, extendedSubnetOnes);
+
+            // Calculate network ranges
+            const networkRanges = [];
+
+            // Simplified network range calculation (for demo purposes)
+            // In a real implementation, you would use proper IP address arithmetic
+            const ipParts = ipStr.split('.');
+            const baseNetwork = `${ipParts[0]}.${ipParts[1]}.${ipParts[2]}.0`;
+
+            for (let i = 0; i < 5; i++) { // Show first 5 subnets for demo
+                const networkAddress = `${ipParts[0]}.${ipParts[1]}.${ipParts[2]}.${i * SG}`;
+                const broadcastAddress = `${ipParts[0]}.${ipParts[1]}.${ipParts[2]}.${(i * SG) + SG - 1}`;
+
+                // Calculate usable range (network +1 to broadcast -1)
+                const usableStart = `${ipParts[0]}.${ipParts[1]}.${ipParts[2]}.${(i * SG) + 1}`;
+                const usableEnd = `${ipParts[0]}.${ipParts[1]}.${ipParts[2]}.${(i * SG) + SG - 2}`;
+
+                networkRanges.push({
+                    subnet: i + 1,
+                    network: networkAddress,
+                    broadcast: broadcastAddress,
+                    usable: `${usableStart} - ${usableEnd}`
+                });
+            }
+
+            return {
+                ip: ipStr,
+                class: ipClass,
+                defaultMask: defaultMask,
+                defaultBinary: defaultBinary,
+                requiredHosts: requiredHosts,
+                hostBits: hostBits,
+                subnetBits: subnetBits,
+                newMask: newMask,
+                newBinary: newMaskBinary,
+                cidrNotation: `/${subnetBits}`,
+                hostPerNetwork: `2^${totalZeros} = ${hostPerNetwork}`,
+                hostPerSubnet: `2^${extendedSubnetOnes} = ${hostPerSubnet}`,
+                networkRanges: networkRanges
+            };
+        }
+
+        function displayResults(data) {
+            // Set summary info
+            document.getElementById('networkClass').textContent = data.class;
+            document.getElementById('defaultMask').textContent = data.defaultMask;
+            document.getElementById('newMask').textContent = `${data.newMask}`;
+            document.getElementById('cidrNotation').textContent = data.cidrNotation;
+
+            // Set detailed info
+            document.getElementById('defaultBinary').textContent = data.defaultBinary;
+            document.getElementById('requiredHosts').textContent = `${data.requiredHosts} (${data.requiredHosts.toString(2)})`;
+            document.getElementById('hostBits').textContent = `${data.hostBits} bits`;
+            document.getElementById('newBinary').textContent = data.newBinary;
+            document.getElementById('hostsPerNetwork').textContent = data.hostPerNetwork;
+            document.getElementById('hostsPerSubnet').textContent = data.hostPerSubnet;
+
+            // Populate network ranges table
+            const tableBody = document.getElementById('networkRanges');
+            tableBody.innerHTML = '';
+
+            data.networkRanges.forEach((range, index) => {
+                const row = document.createElement('tr');
+                row.className = 'network-range';
+                row.style.animationDelay = `${index * 0.1}s`;
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">${range.subnet}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 font-mono">${range.network}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 font-mono">${range.broadcast}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 font-mono">${range.usable}</td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
+    </script>
+</body>
+
+</html>
