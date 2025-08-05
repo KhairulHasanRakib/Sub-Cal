@@ -220,6 +220,31 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Octet Position by 1's -->
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Octet Position (by 1's):</span>
+                            <div class="flex items-center">
+                                <span id="octetByOne" class="font-mono text-sm bg-gray-100 px-2 py-1 rounded"></span>
+                                <button class="copy-btn ml-2 text-gray-500 hover:text-indigo-600"
+                                    data-target="octetByOne">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Octet Position by 0's -->
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Octet Position (by 0's):</span>
+                            <div class="flex items-center">
+                                <span id="octetByZero" class="font-mono text-sm bg-gray-100 px-2 py-1 rounded"></span>
+                                <button class="copy-btn ml-2 text-gray-500 hover:text-indigo-600"
+                                    data-target="octetByZero">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -475,6 +500,27 @@
                 (newMaskBin.match(/1/g) || []).length -
                 (defaultMaskBin.match(/1/g) || []).length;
 
+            const octets = newMaskBinary.split(".");
+
+            // 1️⃣: Right to left – First `1` is in which octet?
+            let octetPositionByOne = null;
+            for (let i = octets.length - 1; i >= 0; i--) {
+                if (octets[i].includes("1")) {
+                    octetPositionByOne = i + 1; // +1 because 1-based
+                    break;
+                }
+            }
+
+            // 2️⃣: Left to right – First `0` is in which octet?
+            let octetPositionByZero = null;
+            for (let i = 0; i < octets.length; i++) {
+                if (octets[i].includes("0")) {
+                    octetPositionByZero = i + 1; // +1 because 1-based
+                    break;
+                }
+            }
+
+
             const sg = Math.pow(2, totalZeros);
             const hostPerNetwork = Math.pow(2, totalZeros);
             const hostPerSubnet = Math.pow(2, extendedSubnetOnes);
@@ -531,6 +577,8 @@
                 newMask: newMask,
                 newBinary: newMaskBinary,
                 cidrNotation: `/${subnetBits}`,
+                octetPositionByOne: octetPositionByOne,
+                octetPositionByZero: octetPositionByZero,
                 sg: `${sg}`,
                 hostPerNetwork: `2^${totalZeros} = ${hostPerNetwork}`,
                 hostPerSubnet: `2^${extendedSubnetOnes} - 2 = ${hostPerSubnet}`,
@@ -552,6 +600,10 @@
             document.getElementById("sg").textContent = data.sg;
             document.getElementById("hostsPerNetwork").textContent = data.hostPerNetwork;
             document.getElementById("hostsPerSubnet").textContent = data.hostPerSubnet;
+
+            document.getElementById("octetByOne").textContent = data.octetPositionByOne;
+            document.getElementById("octetByZero").textContent = data.octetPositionByZero;
+
 
             const tableBody = document.getElementById("networkRanges");
             tableBody.innerHTML = "";
