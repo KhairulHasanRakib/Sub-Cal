@@ -188,6 +188,16 @@
                         </div>
 
                         <div class="flex justify-between items-center">
+                            <span class="text-gray-600">SG:</span>
+                            <div class="flex items-center">
+                                <span id="sg" class="font-mono text-sm bg-gray-100 px-2 py-1 rounded"></span>
+                                <button class="copy-btn ml-2 text-gray-500 hover:text-indigo-600" data-target="sg">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center">
                             <span class="text-gray-600">Hosts per Network:</span>
                             <div class="flex items-center">
                                 <span id="hostsPerNetwork"
@@ -254,7 +264,6 @@
     </div>
 
     <script>
-        //AI
         document.addEventListener("DOMContentLoaded", function () {
             const form = document.getElementById("subnetForm");
             const resultsSection = document.getElementById("results");
@@ -324,6 +333,8 @@
                 allText += `Host Bits Needed: ${document.getElementById("hostBits").textContent
                     }\n`;
                 allText += `New Binary Mask: ${document.getElementById("newBinary").textContent
+                    }\n`;
+                allText += `SG: ${document.getElementById("sg").textContent
                     }\n`;
                 allText += `Hosts per Network: ${document.getElementById("hostsPerNetwork").textContent
                     }\n`;
@@ -464,6 +475,7 @@
                 (newMaskBin.match(/1/g) || []).length -
                 (defaultMaskBin.match(/1/g) || []).length;
 
+            const sg = Math.pow(2, totalZeros);
             const hostPerNetwork = Math.pow(2, totalZeros);
             const hostPerSubnet = Math.pow(2, extendedSubnetOnes);
 
@@ -519,6 +531,7 @@
                 newMask: newMask,
                 newBinary: newMaskBinary,
                 cidrNotation: `/${subnetBits}`,
+                sg: `${sg}`,
                 hostPerNetwork: `2^${totalZeros} = ${hostPerNetwork}`,
                 hostPerSubnet: `2^${extendedSubnetOnes} - 2 = ${hostPerSubnet}`,
                 networkRanges: networkRanges,
@@ -536,6 +549,7 @@
                 } (${data.requiredHosts.toString(2)})`;
             document.getElementById("hostBits").textContent = `${data.hostBits} bits`;
             document.getElementById("newBinary").textContent = data.newBinary;
+            document.getElementById("sg").textContent = data.sg;
             document.getElementById("hostsPerNetwork").textContent = data.hostPerNetwork;
             document.getElementById("hostsPerSubnet").textContent = data.hostPerSubnet;
 
