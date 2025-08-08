@@ -188,7 +188,7 @@
                         </div>
 
                         <div class="flex justify-between items-center">
-                            <span class="text-gray-600">SG:</span>
+                            <span class="text-gray-600">Subnet Generator (SG):</span>
                             <div class="flex items-center">
                                 <span id="sg" class="font-mono text-sm bg-gray-100 px-2 py-1 rounded"></span>
                                 <button class="copy-btn ml-2 text-gray-500 hover:text-indigo-600" data-target="sg">
@@ -359,7 +359,7 @@
                     }\n`;
                 allText += `New Binary Mask: ${document.getElementById("newBinary").textContent
                     }\n`;
-                allText += `SG: ${document.getElementById("sg").textContent
+                allText += `Subnet Generator (SG): ${document.getElementById("sg").textContent
                     }\n`;
                 allText += `Hosts per Network: ${document.getElementById("hostsPerNetwork").textContent
                     }\n`;
@@ -520,6 +520,23 @@
                 }
             }
 
+            function toSuperscript(number) {
+                const superscriptMap = {
+                    '0': '⁰',
+                    '1': '¹',
+                    '2': '²',
+                    '3': '³',
+                    '4': '⁴',
+                    '5': '⁵',
+                    '6': '⁶',
+                    '7': '⁷',
+                    '8': '⁸',
+                    '9': '⁹'
+                };
+
+                return number.toString().split('').map(d => superscriptMap[d]).join('');
+            }
+
 
             const sg = Math.pow(2, totalZeros);
             const hostPerNetwork = Math.pow(2, totalZeros);
@@ -580,8 +597,11 @@
                 octetPositionByOne: octetPositionByOne,
                 octetPositionByZero: octetPositionByZero,
                 sg: `${sg}`,
-                hostPerNetwork: `2^${totalZeros} = ${hostPerNetwork}`,
-                hostPerSubnet: `2^${extendedSubnetOnes} - 2 = ${hostPerSubnet}`,
+                // hostPerNetwork: `2^${totalZeros} = ${hostPerNetwork}`,
+                // hostPerSubnet: `2^${extendedSubnetOnes} = ${hostPerSubnet}`,
+                hostPerNetwork: `2${toSuperscript(totalZeros)} = ${hostPerNetwork}`,
+                hostPerSubnet: `2${toSuperscript(extendedSubnetOnes)} = ${hostPerSubnet}`,
+
                 networkRanges: networkRanges,
             };
         }
@@ -634,6 +654,21 @@
         }
 
     </script>
+    <script>
+        document.addEventListener("contextmenu", e => e.preventDefault());
+        document.onkeydown = function (e) {
+            if (e.keyCode == 123 || // F12
+                (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) ||
+                (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) ||
+                (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+                return false;
+            }
+        }
+    </script>
+    <footer class="text-center text-gray-500 text-sm mt-10">
+        <p>&copy; 2025 Sub-Cal. All rights reserved.</p>
+        <p>Created with ❤️ by <a href="https://github.com/KhairulHasanRakib" target="_blank">Khairul Hasan Rakib</a></p>
+    </footer>
 </body>
 
 </html>
