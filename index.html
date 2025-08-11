@@ -51,6 +51,62 @@
 </head>
 
 <body class="bg-gray-900 min-h-screen">
+
+<!-- ---------- Visitor / Tool Use Bar ---------- -->
+    <div
+        style="position: fixed; top: 0; left: 0; width: 100%; background-color: rgba(45, 55, 72, 0.26); color: #fff; padding: 8px; text-align: center; z-index: 9999;">
+        Visitors: <span id="visitorCount">0</span> &nbsp;&nbsp;
+        <!-- Tool Uses: <span id="toolUseCount">0</span> &nbsp;&nbsp; -->
+    </div>
+
+    <!-- ---------- Firebase Counter Script ---------- -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+        // ----- Firebase config (keep your own credentials) -----
+        const firebaseConfig = {
+            apiKey: "AIzaSyAE8djfsbjOqJpa5Dmv27sbX00kVqitjnw",
+            authDomain: "my-counter-6c094.firebaseapp.com",
+            databaseURL: "https://my-counter-6c094-default-rtdb.firebaseio.com/",
+            projectId: "my-counter-6c094",
+            storageBucket: "my-counter-6c094.appspot.com",
+            messagingSenderId: "553934016940",
+            appId: "1:553934016940:web:252c5f11cc0ce50bd12a09",
+            measurementId: "G-NP2SYHFWZ0"
+        };
+
+        // Initialise Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // ----- Counter helpers -----
+        function incrementCounter(counterName) {
+            const counterRef = database.ref(counterName);
+            counterRef.transaction(current => (current || 0) + 1);
+        }
+
+        function showCounter(counterName, elementId) {
+            const counterRef = database.ref(counterName);
+            counterRef.on('value', snap => {
+                const count = snap.val() || 0;
+                document.getElementById(elementId).textContent = count;
+            });
+        }
+
+        // ----- Page‑load initialisation -----
+        window.addEventListener('load', () => {
+            // Count a new visitor
+            incrementCounter('visitors');
+
+            // Show live counters
+            showCounter('visitors', 'visitorCount');
+            showCounter('toolUses', 'toolUseCount');
+        });
+    </script>
+
+
+    
     <div class="container mx-auto px-4 py-8">
         <div class="max-w-4xl mx-auto">
             <!-- Header -->
@@ -672,3 +728,4 @@
 
 
 </html>
+
